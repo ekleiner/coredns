@@ -47,8 +47,8 @@ func TestUnhealthy(t *testing.T) {
 	}
 
 	fails := atomic.LoadInt32(&upstreams[0].(*staticUpstream).Hosts[0].Fails)
-	if fails != 3 {
-		t.Errorf("Expected %d fails, got %d", 3, fails)
+	if fails != 1 {
+		t.Errorf("Expected %d fails, got %d", 1, fails)
 	}
 	// HC should be kicked off, and reset the counter to 0
 	i := 0
