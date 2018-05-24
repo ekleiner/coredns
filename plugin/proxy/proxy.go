@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"sync/atomic"
 	"time"
 
@@ -114,19 +113,6 @@ func (p Proxy) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (
 				RequestDuration.WithLabelValues(metrics.WithServer(ctx), state.Proto(), upstream.Exchanger().Protocol(), familyToString(state.Family()), host.Name).Observe(time.Since(start).Seconds())
 
 				return 0, taperr
-			}
-
-			// A "ANY isc.org" query is being dropped by ISC's nameserver, we see this as a i/o timeout, but
-			// would then mark our upstream is being broken. We should not do this if we consider the error temporary.
-			// Of course it could really be that our upstream is broken
-			if oe, ok := backendErr.(*net.OpError); ok {
-				// Note this keeps looping and trying until tryDuration is hit, at which point our client
-				// might be long gone...
-				if oe.Timeout() {
-					// Our upstream's upstream is problably messing up, continue with next selected
-					// host - which my be the *same* one as we don't set any uh.Fails.
-					continue
-				}
 			}
 
 			timeout := host.FailTimeout

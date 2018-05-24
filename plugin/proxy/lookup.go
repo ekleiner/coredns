@@ -28,7 +28,7 @@ func NewLookupWithOption(hosts []string, opts Options) Proxy {
 		from: ".",
 		HealthCheck: healthcheck.HealthCheck{
 			FailTimeout: 5 * time.Second,
-			MaxFails:    3,
+			MaxFails:    1,
 		},
 		ex: newDNSExWithOption(opts),
 	}

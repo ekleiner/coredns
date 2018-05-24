@@ -44,7 +44,7 @@ func NewStaticUpstream(c *caddyfile.Dispenser) (Upstream, error) {
 		from: ".",
 		HealthCheck: healthcheck.HealthCheck{
 			FailTimeout: 5 * time.Second,
-			MaxFails:    3,
+			MaxFails:    1,
 		},
 		ex: newDNSEx(),
 	}
