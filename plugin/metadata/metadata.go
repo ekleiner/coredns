@@ -7,20 +7,24 @@ import (
 	"github.com/miekg/dns"
 )
 
-// Metadater TODO interface needs to be implemented by each plugin willing to provide
-// healthhceck information to the health plugin. Note this method should return
-// quickly, i.e. just checking a boolean status, as it is called every second
-// from the health plugin.
+// Metadater interface needs to be implemented by each plugin willing to provide
+// metadata information for other plugins.
+// Note: this method should work quickly, because it is called for every request
+// from the metadata plugin.
 type Metadater interface {
-	// Metadata returns a TODO
+	// Metadata gets content, ResponseWriter and dns.Msg and returns context with
+	// additional values. Metadata must be thread safe.
 	Metadata(context.Context, dns.ResponseWriter, *dns.Msg) (context.Context, error)
 }
 
+// Metadata implements collecting metadata information from all enabled plugins
+// which provide it
 type Metadata struct {
 	Metadaters []Metadater
 	Next       plugin.Handler
 }
 
+// Name implements the Handler interface.
 func (m *Metadata) Name() string { return "metadata" }
 
 // ServeDNS implements the plugin.Handler interface.
@@ -33,7 +37,6 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		}
 	}
 
-	// context.WithValue(parent, key, val)
 	rcode, err := plugin.NextOrFailure(m.Name(), m.Next, ctx, w, r)
 
 	return rcode, err

@@ -1,8 +1,6 @@
 package metadata
 
 import (
-	"fmt"
-
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	"github.com/mholt/caddy"
@@ -21,21 +19,21 @@ func setup(c *caddy.Controller) error {
 		return plugin.Error("metadata", c.ArgErr())
 	}
 
-	h := &Metadata{}
+	m := &Metadata{}
 
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
-		h.Next = next
-		return h
+		m.Next = next
+		return m
 	})
 
 	c.OnStartup(func() error {
 		plugins := dnsserver.GetConfig(c).Handlers()
+		// Collect all plugins which implement Metadater interface
 		for _, p := range plugins {
-			if m, ok := p.(Metadater); ok {
-				h.Metadaters = append(h.Metadaters, m)
+			if met, ok := p.(Metadater); ok {
+				m.Metadaters = append(m.Metadaters, met)
 			}
 		}
-		fmt.Println(h.Metadaters)
 		return nil
 	})
 

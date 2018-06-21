@@ -278,8 +278,8 @@ func (rule *edns0VariableRule) ruleData(ctx context.Context, w dns.ResponseWrite
 	// Metadata variable
 	ctxVarName := strings.Trim(rule.variable, "{}")
 	ctxVal := ctx.Value(ctxVarName)
+	// Make sure that metadata is ascii string and return it
 	if b, ok := ctxVal.([]byte); ok {
-		// Metadata value is written as ascii string
 		return b, nil
 	}
 
