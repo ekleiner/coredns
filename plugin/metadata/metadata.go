@@ -12,26 +12,29 @@ import (
 // quickly, i.e. just checking a boolean status, as it is called every second
 // from the health plugin.
 type Metadater interface {
-	// Metadata returns a TODO
-	Metadata(context.Context, dns.ResponseWriter, *dns.Msg) (context.Context, error)
+	// Metadata returns metadata value by variable name.
+	// Must provide the values for all variables returned by MetadataVarNames().
+	Metadata(string, context.Context, dns.ResponseWriter, *dns.Msg) (interface{}, error)
+	// Returns list of metadata variables which this Metadater provides
+	MetadataVarsAvailable() []string
 }
 
 type Metadata struct {
-	Metadaters []Metadater
+	Metadaters map[string]Metadater
 	Next       plugin.Handler
 }
 
 func (m *Metadata) Name() string { return "metadata" }
 
+func (m *Metadata) GetVal(varName string, ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (interface{}, error) {
+	metadater := m.Metadaters[varName]
+	return metadater.Metadata(varName, ctx, w, r)
+}
+
 // ServeDNS implements the plugin.Handler interface.
 func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 
-	// Go through all metadaters and collect metadata
-	for _, metadater := range m.Metadaters {
-		if c, err := metadater.Metadata(ctx, w, r); err == nil {
-			ctx = c
-		}
-	}
+	ctx = context.WithValue(ctx, "metadata", m.GetVal)
 
 	// context.WithValue(parent, key, val)
 	rcode, err := plugin.NextOrFailure(m.Name(), m.Next, ctx, w, r)

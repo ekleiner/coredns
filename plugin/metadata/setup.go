@@ -32,7 +32,10 @@ func setup(c *caddy.Controller) error {
 		plugins := dnsserver.GetConfig(c).Handlers()
 		for _, p := range plugins {
 			if m, ok := p.(Metadater); ok {
-				h.Metadaters = append(h.Metadaters, m)
+				varNames := m.MetadataVarsAvailable()
+				for _, name := range varNames {
+					h.Metadaters[name] = m
+				}
 			}
 		}
 		fmt.Println(h.Metadaters)
