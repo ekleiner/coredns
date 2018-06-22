@@ -2,6 +2,7 @@
 package rewrite
 
 import (
+	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -46,7 +47,7 @@ func setupEdns0Opt(r *dns.Msg) *dns.OPT {
 }
 
 // Rewrite will alter the request EDNS0 NSID option
-func (rule *edns0NsidRule) Rewrite(w dns.ResponseWriter, r *dns.Msg) Result {
+func (rule *edns0NsidRule) Rewrite(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) Result {
 	result := RewriteIgnored
 	o := setupEdns0Opt(r)
 	found := false
@@ -83,7 +84,7 @@ func (rule *edns0NsidRule) GetResponseRule() ResponseRule {
 }
 
 // Rewrite will alter the request EDNS0 local options
-func (rule *edns0LocalRule) Rewrite(w dns.ResponseWriter, r *dns.Msg) Result {
+func (rule *edns0LocalRule) Rewrite(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) Result {
 	result := RewriteIgnored
 	o := setupEdns0Opt(r)
 	found := false
@@ -187,7 +188,7 @@ func newEdns0VariableRule(mode, action, code, variable string) (*edns0VariableRu
 		return nil, err
 	}
 	//Validate
-	if !isValidVariable(variable) {
+	if !isValidVariable(variable) && false { //TODO: && no metadata plugin enabled
 		return nil, fmt.Errorf("unsupported variable name %q", variable)
 	}
 	return &edns0VariableRule{mode: mode, action: action, code: uint16(c), variable: variable}, nil
@@ -238,7 +239,7 @@ func (rule *edns0VariableRule) family(ip net.Addr) int {
 }
 
 // ruleData returns the data specified by the variable
-func (rule *edns0VariableRule) ruleData(w dns.ResponseWriter, r *dns.Msg) ([]byte, error) {
+func (rule *edns0VariableRule) ruleData(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) ([]byte, error) {
 
 	req := request.Request{W: w, Req: r}
 	switch rule.variable {
@@ -274,14 +275,22 @@ func (rule *edns0VariableRule) ruleData(w dns.ResponseWriter, r *dns.Msg) ([]byt
 		return rule.portToWire(port)
 	}
 
+	// Metadata variable
+	ctxVarName := strings.Trim(rule.variable, "{}")
+	ctxVal := ctx.Value(ctxVarName)
+	// Make sure that metadata is ascii string and return it
+	if b, ok := ctxVal.([]byte); ok {
+		return b, nil
+	}
+
 	return nil, fmt.Errorf("unable to extract data for variable %s", rule.variable)
 }
 
 // Rewrite will alter the request EDNS0 local options with specified variables
-func (rule *edns0VariableRule) Rewrite(w dns.ResponseWriter, r *dns.Msg) Result {
+func (rule *edns0VariableRule) Rewrite(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) Result {
 	result := RewriteIgnored
 
-	data, err := rule.ruleData(w, r)
+	data, err := rule.ruleData(ctx, w, r)
 	if err != nil || data == nil {
 		return result
 	}
@@ -400,7 +409,7 @@ func (rule *edns0SubnetRule) fillEcsData(w dns.ResponseWriter, r *dns.Msg,
 }
 
 // Rewrite will alter the request EDNS0 subnet option
-func (rule *edns0SubnetRule) Rewrite(w dns.ResponseWriter, r *dns.Msg) Result {
+func (rule *edns0SubnetRule) Rewrite(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) Result {
 	result := RewriteIgnored
 	o := setupEdns0Opt(r)
 	found := false
