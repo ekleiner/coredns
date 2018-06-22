@@ -14,12 +14,20 @@ func init() {
 }
 
 func setup(c *caddy.Controller) error {
+	m := &Metadata{}
 	c.Next()
-	if c.NextArg() {
-		return plugin.Error("metadata", c.ArgErr())
+	zones := c.RemainingArgs()
+
+	if len(zones) != 0 {
+		m.Zones = zones
+		for i := 0; i < len(m.Zones); i++ {
+			m.Zones[i] = plugin.Host(m.Zones[i]).Normalize()
+		}
 	}
 
-	m := &Metadata{}
+	if c.NextBlock() || c.Next() {
+		return plugin.Error("metadata", c.ArgErr())
+	}
 
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
 		m.Next = next

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/coredns/coredns/plugin"
+	"github.com/coredns/coredns/request"
 	"github.com/miekg/dns"
 )
 
@@ -20,6 +21,7 @@ type Metadater interface {
 // Metadata implements collecting metadata information from all enabled plugins
 // which provide it
 type Metadata struct {
+	Zones      []string
 	Metadaters []Metadater
 	Next       plugin.Handler
 }
@@ -30,10 +32,13 @@ func (m *Metadata) Name() string { return "metadata" }
 // ServeDNS implements the plugin.Handler interface.
 func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 
-	// Go through all metadaters and collect metadata
-	for _, metadater := range m.Metadaters {
-		if c, err := metadater.Metadata(ctx, w, r); err == nil {
-			ctx = c
+	state := request.Request{W: w, Req: r}
+	if len(m.Zones) == 0 || plugin.Zones(m.Zones).Matches(state.Name()) != "" {
+		// Go through all metadaters and collect metadata
+		for _, metadater := range m.Metadaters {
+			if c, err := metadater.Metadata(ctx, w, r); err == nil {
+				ctx = c
+			}
 		}
 	}
 
