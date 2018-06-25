@@ -8,14 +8,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-// testMetadater implements fake Metadaters (plugins which inmplement Metadater interface)
-type testMetadater struct {
-	key   interface{}
+// testMetadataer implements fake Metadataers. Plugins which inmplement Metadataer interface
+type testMetadataer struct {
+	key   string
 	value interface{}
 }
 
-func (m testMetadater) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (context.Context, error) {
-	return context.WithValue(ctx, m.key, m.value), nil
+func (m testMetadataer) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) map[string]interface{} {
+	return map[string]interface{}{m.key: m.value}
 }
 
 // testHandler implements plugin.Handler
@@ -29,29 +29,42 @@ func (m *testHandler) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns
 }
 
 func TestMetadataServDns(t *testing.T) {
-	expectedMetadata := []testMetadater{
-		{"testkey", "testvalue"},
-		{500, 795},
+	expectedMetadata := []testMetadataer{
+		{"testkey1", "testvalue"},
+		{"testkey2", 795},
 	}
-	// Create fake metadaters based on expectedMetadata
-	metadaters := []Metadater{}
+	// Create fake Metadataers based on expectedMetadata
+	Metadataers := []Metadataer{}
 	for _, e := range expectedMetadata {
-		metadaters = append(metadaters, e)
+		Metadataers = append(Metadataers, e)
 	}
 	// Fake handler which stores the resulting context
 	next := &testHandler{}
 
 	metadata := Metadata{
-		Metadaters: metadaters,
-		Next:       next,
+		Zones:       []string{"."},
+		Metadataers: Metadataers,
+		Next:        next,
 	}
 	metadata.ServeDNS(context.TODO(), &test.ResponseWriter{}, new(dns.Msg))
 
-	// Verify that next plugin can find metadata in context from all metadaters
+	// Verify that next plugin can find metadata in context from all Metadataers
 	for _, expected := range expectedMetadata {
-		metadataVal := next.ctx.Value(expected.key)
+		md, ok := FromContext(next.ctx)
+		if !ok {
+			t.Fatalf("Metadata is expected but not present inside the context")
+		}
+		metadataVal, ok := md.Get(expected.key)
+		if !ok {
+			t.Fatalf("Value by key %v can't be retrieved", expected.key)
+		}
 		if metadataVal != expected.value {
 			t.Errorf("Expected value %v, but got %v", expected.value, metadataVal)
+		}
+		wrongKey := "wrong_key"
+		metadataVal, ok = md.Get(wrongKey)
+		if ok {
+			t.Fatalf("Value by key %v is not expected to be recieved, but got: %v", wrongKey, metadataVal)
 		}
 	}
 }

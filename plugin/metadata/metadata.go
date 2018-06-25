@@ -8,22 +8,12 @@ import (
 	"github.com/miekg/dns"
 )
 
-// Metadater interface needs to be implemented by each plugin willing to provide
-// metadata information for other plugins.
-// Note: this method should work quickly, because it is called for every request
-// from the metadata plugin.
-type Metadater interface {
-	// Metadata gets content, ResponseWriter and dns.Msg and returns context with
-	// additional values. Metadata must be thread safe.
-	Metadata(context.Context, dns.ResponseWriter, *dns.Msg) (context.Context, error)
-}
-
-// Metadata implements collecting metadata information from all enabled plugins
-// which provide it
+// Metadata implements collecting metadata information from all plugins that
+// implement the Metadataer interface.
 type Metadata struct {
-	Zones      []string
-	Metadaters []Metadater
-	Next       plugin.Handler
+	Zones       []string
+	Metadataers []Metadataer
+	Next        plugin.Handler
 }
 
 // Name implements the Handler interface.
@@ -32,13 +22,14 @@ func (m *Metadata) Name() string { return "metadata" }
 // ServeDNS implements the plugin.Handler interface.
 func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 
+	md, ctx := newMD(ctx)
+
 	state := request.Request{W: w, Req: r}
-	if len(m.Zones) == 0 || plugin.Zones(m.Zones).Matches(state.Name()) != "" {
-		// Go through all metadaters and collect metadata
-		for _, metadater := range m.Metadaters {
-			if c, err := metadater.Metadata(ctx, w, r); err == nil {
-				ctx = c
-			}
+	if plugin.Zones(m.Zones).Matches(state.Name()) != "" {
+		// Go through all Metadataers and collect metadata
+		for _, Metadataer := range m.Metadataers {
+			metadata := Metadataer.Metadata(ctx, w, r)
+			md.addValues(metadata)
 		}
 	}
 

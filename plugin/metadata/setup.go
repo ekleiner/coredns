@@ -14,6 +14,30 @@ func init() {
 }
 
 func setup(c *caddy.Controller) error {
+	m, err := metadataParse(c)
+	if err != nil {
+		return err
+	}
+	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
+		m.Next = next
+		return m
+	})
+
+	c.OnStartup(func() error {
+		plugins := dnsserver.GetConfig(c).Handlers()
+		// Collect all plugins which implement Metadataer interface
+		for _, p := range plugins {
+			if met, ok := p.(Metadataer); ok {
+				m.Metadataers = append(m.Metadataers, met)
+			}
+		}
+		return nil
+	})
+
+	return nil
+}
+
+func metadataParse(c *caddy.Controller) (*Metadata, error) {
 	m := &Metadata{}
 	c.Next()
 	zones := c.RemainingArgs()
@@ -23,27 +47,15 @@ func setup(c *caddy.Controller) error {
 		for i := 0; i < len(m.Zones); i++ {
 			m.Zones[i] = plugin.Host(m.Zones[i]).Normalize()
 		}
+	} else {
+		m.Zones = make([]string, len(c.ServerBlockKeys))
+		for i := 0; i < len(c.ServerBlockKeys); i++ {
+			m.Zones[i] = plugin.Host(c.ServerBlockKeys[i]).Normalize()
+		}
 	}
 
 	if c.NextBlock() || c.Next() {
-		return plugin.Error("metadata", c.ArgErr())
+		return nil, plugin.Error("metadata", c.ArgErr())
 	}
-
-	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
-		m.Next = next
-		return m
-	})
-
-	c.OnStartup(func() error {
-		plugins := dnsserver.GetConfig(c).Handlers()
-		// Collect all plugins which implement Metadater interface
-		for _, p := range plugins {
-			if met, ok := p.(Metadater); ok {
-				m.Metadaters = append(m.Metadaters, met)
-			}
-		}
-		return nil
-	})
-
-	return nil
+	return m, nil
 }
