@@ -32,7 +32,7 @@ func newMD(ctx context.Context) (MD, context.Context) {
 // FromContext retrieves MD struct from context
 func FromContext(ctx context.Context) (md MD, ok bool) {
 	if metadata := ctx.Value(metadataKey{}); metadata != nil {
-		if md := metadata.(MD); md != nil {
+		if md, ok := metadata.(MD); ok {
 			return md, true
 		}
 	}
