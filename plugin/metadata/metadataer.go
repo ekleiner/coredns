@@ -20,23 +20,18 @@ type Metadataer interface {
 // MD is metadata information storage
 type MD map[string]interface{}
 
-// MDKeyType defines the type of key that is used to save metadata into the context
-type mDKeyType string
-
-// MDKey specifies
-const mDKey mDKeyType = "md-key"
-
+// metadataKey defines the type of key that is used to save metadata into the context
 type metadataKey struct{}
 
 // newMD initializes MD and attaches it to context
 func newMD(ctx context.Context) (MD, context.Context) {
 	m := MD{}
-	return m, context.WithValue(ctx, mDKey, m)
+	return m, context.WithValue(ctx, metadataKey{}, m)
 }
 
 // FromContext retrieves MD struct from context
 func FromContext(ctx context.Context) (md MD, ok bool) {
-	if metadata := ctx.Value(mDKey); metadata != nil {
+	if metadata := ctx.Value(metadataKey{}); metadata != nil {
 		if md := metadata.(MD); md != nil {
 			return md, true
 		}
