@@ -29,14 +29,26 @@ func TestSetupHealth(t *testing.T) {
 			t.Errorf("Test %d: Expected error but found none for input %s", i, test.input)
 		}
 
-		if err != nil && !test.shouldErr {
+		if !test.shouldErr && err != nil {
 			t.Errorf("Test %d: Expected no error but found one for input %s. Error was: %v", i, test.input, err)
 		}
 
-		if err == nil && !test.shouldErr {
+		if !test.shouldErr && err == nil {
 			if !reflect.DeepEqual(test.zones, m.Zones) {
 				t.Errorf("Test %d: Expected zones %s. Zones were: %v", i, test.zones, m.Zones)
 			}
+		}
+
+		// Check the full setup call too
+		c = caddy.NewTestController("dns", test.input)
+		err = setup(c)
+
+		if test.shouldErr && err == nil {
+			t.Errorf("Test %d: Setup call expected error but found none for input %s", i, test.input)
+		}
+
+		if !test.shouldErr && err != nil {
+			t.Errorf("Test %d: Setup call expected no error but found one for input %s. Error was: %v", i, test.input, err)
 		}
 	}
 }
