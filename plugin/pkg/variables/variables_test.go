@@ -33,6 +33,11 @@ func TestGetMetadataValue(t *testing.T) {
 			false,
 		},
 		{
+			clientPort,
+			[]byte{0x9D, 0x14},
+			false,
+		},
+		{
 			protocol,
 			[]byte("udp"),
 			false,
