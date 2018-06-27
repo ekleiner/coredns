@@ -6,7 +6,9 @@
 
 ## Description
 
-By enabling *metadata* any plugin that implements [metadata.Metadataer interface](https://godoc.org/github.com/coredns/coredns/plugin/metadata#Metadataer) will be called and will be able to add it's own Metadata to context. The metadata collected will be available for all plugins handler, via the Context parameter provided in the ServeDNS function
+By enabling *metadata* any plugin that implements [metadata.Metadataer interface](https://godoc.org/github.com/coredns/coredns/plugin/metadata#Metadataer) will be called for each DNS query, at being of the process for that query, in order to add it's own Metadata to context. The metadata collected will be available for all plugins handler, via the Context parameter provided in the ServeDNS function.
+Metadata plugin is automatically adding the so-called default medatada (extracted from the query) to the context. Those default metadata are: {qname}, {qtype}, {client_ip}, {client_port}, {protocol}, {server_ip}, {server_port}
+
 
 ## Syntax
 
@@ -31,7 +33,7 @@ Enable metadata for all requests. Rewrite uses one of provided by default metada
 }
 ~~~
 
-Add metadata for all requests within `example.org.`. Rewrite uses one of provided by default metadata variables.
+Add metadata for all requests within `example.org.`. Rewrite uses one of provided by default metadata variables. Any other requests won't have metadata.
 
 ~~~ corefile
 . {

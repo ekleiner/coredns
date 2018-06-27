@@ -9,8 +9,8 @@ import (
 
 // Metadataer interface needs to be implemented by each plugin willing to provide
 // metadata information for other plugins.
-// Note: this method should work quickly, because it is called for every request
-// from the metadata plugin.
+// Note: this method should work quickly, because it will be called for every DNS
+// Query that match metadata plugin filter.
 type Metadataer interface {
 	// Metadata is expected to return map with metadata information which can be
 	// later retrieved from context by any other plugin. It may return empty
