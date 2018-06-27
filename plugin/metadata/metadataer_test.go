@@ -28,8 +28,7 @@ func TestMD(t *testing.T) {
 	md, ctx := newMD(ctx)
 
 	for i, tc := range tests {
-		//
-		md.addValues(tc.addValues)
+		md.setValues(tc.addValues)
 
 		if !reflect.DeepEqual(tc.expectedValues, map[string]interface{}(md)) {
 			t.Errorf("Test %d: Expected %v but got %v", i, tc.expectedValues, md)

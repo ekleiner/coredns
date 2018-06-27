@@ -54,7 +54,7 @@ func TestMetadataServDns(t *testing.T) {
 		if !ok {
 			t.Fatalf("Metadata is expected but not present inside the context")
 		}
-		metadataVal, ok := md.Get(expected.key)
+		metadataVal, ok := md.Value(expected.key)
 		if !ok {
 			t.Fatalf("Value by key %v can't be retrieved", expected.key)
 		}
@@ -62,7 +62,7 @@ func TestMetadataServDns(t *testing.T) {
 			t.Errorf("Expected value %v, but got %v", expected.value, metadataVal)
 		}
 		wrongKey := "wrong_key"
-		metadataVal, ok = md.Get(wrongKey)
+		metadataVal, ok = md.Value(wrongKey)
 		if ok {
 			t.Fatalf("Value by key %v is not expected to be recieved, but got: %v", wrongKey, metadataVal)
 		}

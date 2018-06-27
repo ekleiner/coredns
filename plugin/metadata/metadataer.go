@@ -9,8 +9,8 @@ import (
 
 // Metadataer interface needs to be implemented by each plugin willing to provide
 // metadata information for other plugins.
-// Note: this method should work quickly, because it will be called for every DNS
-// Query that match metadata plugin filter.
+// Note: this method should work quickly, because it is called for every request
+// from the metadata plugin.
 type Metadataer interface {
 	// Metadata is expected to return map with metadata information which can be
 	// later retrieved from context by any other plugin. It may return empty
@@ -41,14 +41,14 @@ func FromContext(ctx context.Context) (md MD, ok bool) {
 }
 
 // Get returns metadata value by key
-func (m MD) Get(key string) (value interface{}, ok bool) {
+func (m MD) Value(key string) (value interface{}, ok bool) {
 	value, ok = m[key]
 	return
 }
 
 // addValues adds metadata values.
 // If variable with a new key already attached then new is not appllied, old is removed.
-func (m MD) addValues(src map[string]interface{}) {
+func (m MD) setValues(src map[string]interface{}) {
 	duplicates := []string{}
 	for k, v := range src {
 		if _, ok := m[k]; !ok {

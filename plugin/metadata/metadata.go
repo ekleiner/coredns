@@ -30,7 +30,7 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		// Go through all Metadataers and collect metadata
 		for _, Metadataer := range m.Metadataers {
 			metadata := Metadataer.Metadata(ctx, w, r)
-			md.addValues(metadata)
+			md.setValues(metadata)
 		}
 	}
 

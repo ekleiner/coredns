@@ -196,7 +196,7 @@ func newEdns0VariableRule(mode, action, code, variable string) (*edns0VariableRu
 // ruleData returns the data specified by the variable
 func (rule *edns0VariableRule) ruleData(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) ([]byte, error) {
 	if md, ok := metadata.FromContext(ctx); ok {
-		if value, ok := md.Get(rule.variable); ok {
+		if value, ok := md.Value(rule.variable); ok {
 			if v, ok := value.([]byte); ok {
 				return v, nil
 			}
