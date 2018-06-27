@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/coredns/coredns/plugin"
+	"github.com/coredns/coredns/plugin/pkg/variables"
 	"github.com/coredns/coredns/request"
 	"github.com/miekg/dns"
 )
@@ -41,8 +42,8 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 // Metadata implements the plugin.Metadataer interface.
 func (m *Metadata) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) map[string]interface{} {
 	result := map[string]interface{}{}
-	for _, varName := range AllProvidedVars {
-		if value, err := GetMetadataValue(varName, w, r); err == nil {
+	for _, varName := range variables.AllProvidedVars {
+		if value, err := variables.GetMetadataValue(varName, w, r); err == nil {
 			result[varName] = value
 		}
 	}

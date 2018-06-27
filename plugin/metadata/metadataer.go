@@ -3,6 +3,7 @@ package metadata
 import (
 	"context"
 
+	"github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/miekg/dns"
 )
 
@@ -45,9 +46,20 @@ func (m MD) Get(key string) (value interface{}, ok bool) {
 	return
 }
 
-// addValues adds metadata values
+// addValues adds metadata values.
+// If variable with a new key already attached then new is not appllied, old is removed.
 func (m MD) addValues(src map[string]interface{}) {
+	duplicates := []string{}
 	for k, v := range src {
-		m[k] = v
+		if _, ok := m[k]; !ok {
+			m[k] = v
+		} else {
+			duplicates = append(duplicates, k)
+			log.Errorf("Metadata variable '%v' has duplicates. None of them is used.", k)
+		}
+	}
+	// Remove duplicated variables
+	for _, k := range duplicates {
+		delete(m, k)
 	}
 }

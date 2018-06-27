@@ -21,20 +21,22 @@ If **ZONES** is specified then metadata add is limited by zones. Metadata is add
 
 ## Examples
 
-Enable metadata
+Enable metadata for all requests. Rewrite uses one of provided by default metadata variables.
 
 ~~~ corefile
 . {
     metadata
-    whoami
+    rewrite edns0 local set 0xffee {client_ip}
+    forward . 8.8.8.8:53
 }
 ~~~
 
-Add metadata for all requests within `example.org.`.
+Add metadata for all requests within `example.org.`. Rewrite uses one of provided by default metadata variables.
 
 ~~~ corefile
 . {
     metadata example.org
-    whoami
+    rewrite edns0 local set 0xffee {client_ip}
+    forward . 8.8.8.8:53
 }
 ~~~

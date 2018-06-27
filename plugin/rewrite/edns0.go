@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/coredns/coredns/plugin/metadata"
+	"github.com/coredns/coredns/plugin/pkg/variables"
 	"github.com/coredns/coredns/request"
 	"github.com/miekg/dns"
 )
@@ -147,7 +148,9 @@ func newEdns0Rule(mode string, args ...string) (Rule, error) {
 		}
 		//Check for variable option
 		if strings.HasPrefix(args[3], "{") && strings.HasSuffix(args[3], "}") {
-			return newEdns0VariableRule(mode, action, args[2], strings.Trim(args[3], "{}"))
+			// Remove first and last runes
+			variable := args[3][1 : len(args[3])-1]
+			return newEdns0VariableRule(mode, action, args[2], variable)
 		}
 		return newEdns0LocalRule(mode, action, args[2], args[3])
 	case "nsid":
@@ -199,7 +202,7 @@ func (rule *edns0VariableRule) ruleData(ctx context.Context, w dns.ResponseWrite
 			}
 		}
 	} else { // No metadata available means metadata plugin is disabled. Try to get the value directly.
-		return metadata.GetMetadataValue(rule.variable, w, r)
+		return variables.GetMetadataValue(rule.variable, w, r)
 	}
 	return nil, fmt.Errorf("unable to extract data for variable %s", rule.variable)
 }

@@ -1,4 +1,4 @@
-package metadata
+package variables
 
 import (
 	"encoding/binary"
