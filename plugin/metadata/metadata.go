@@ -11,11 +11,11 @@ import (
 )
 
 // Metadata implements collecting metadata information from all plugins that
-// implement the Metadataer interface.
+// implement the Provider interface.
 type Metadata struct {
-	Zones       []string
-	Metadataers []Metadataer
-	Next        plugin.Handler
+	Zones     []string
+	Providers []Provider
+	Next      plugin.Handler
 }
 
 // Name implements the Handler interface.
@@ -28,10 +28,10 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 	state := request.Request{W: w, Req: r}
 	if plugin.Zones(m.Zones).Matches(state.Name()) != "" {
-		// Go through all Metadataers and collect metadata
-		for _, metadataer := range m.Metadataers {
-			for _, varName := range metadataer.MetadataVarNames() {
-				if val, ok := metadataer.Metadata(ctx, w, r, varName); ok {
+		// Go through all Providers and collect metadata
+		for _, provider := range m.Providers {
+			for _, varName := range provider.MetadataVarNames() {
+				if val, ok := provider.Metadata(ctx, w, r, varName); ok {
 					md.setValue(varName, val)
 				}
 			}
@@ -43,10 +43,10 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	return rcode, err
 }
 
-// MetadataVarNames implements the plugin.Metadataer interface.
+// MetadataVarNames implements the plugin.Provider interface.
 func (m *Metadata) MetadataVarNames() []string { return variables.All }
 
-// Metadata implements the plugin.Metadataer interface.
+// Metadata implements the plugin.Provider interface.
 func (m *Metadata) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg, varName string) (interface{}, bool) {
 	if val, err := variables.GetValue(varName, w, r); err == nil {
 		return val, true

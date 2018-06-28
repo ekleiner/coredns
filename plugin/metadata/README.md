@@ -6,7 +6,7 @@
 
 ## Description
 
-By enabling *metadata* any plugin that implements [metadata.Metadataer interface](https://godoc.org/github.com/coredns/coredns/plugin/metadata#Metadataer) will be called for each DNS query, at being of the process for that query, in order to add it's own Metadata to context. The metadata collected will be available for all plugins handler, via the Context parameter provided in the ServeDNS function.
+By enabling *metadata* any plugin that implements [metadata.Provider interface](https://godoc.org/github.com/coredns/coredns/plugin/metadata#Provider) will be called for each DNS query, at being of the process for that query, in order to add it's own Metadata to context. The metadata collected will be available for all plugins handler, via the Context parameter provided in the ServeDNS function.
 Metadata plugin is automatically adding the so-called default medatada (extracted from the query) to the context. Those default metadata are: {qname}, {qtype}, {client_ip}, {client_port}, {protocol}, {server_ip}, {server_port}
 
 
@@ -18,10 +18,10 @@ metadata [ZONES... ]
 
 ## Plugins
 
-Metadataer interface needs to be implemented by each plugin willing to provide metadata information for other plugins. It will be called by metadata and gather the information from all plugins in context.
+metadata.Provider interface needs to be implemented by each plugin willing to provide metadata information for other plugins. It will be called by metadata and gather the information from all plugins in context.
 Note: this method should work quickly, because it is called for every request
 from the metadata plugin.
-If **ZONES** is specified then metadata add is limited by zones. Metadata is added to every context going through Metadataer if **ZONES** are not specified.
+If **ZONES** is specified then metadata add is limited by zones. Metadata is added to every context going through metadata.Provider if **ZONES** are not specified.
 
 
 ## Examples

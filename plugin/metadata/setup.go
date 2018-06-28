@@ -28,17 +28,17 @@ func setup(c *caddy.Controller) error {
 
 	c.OnStartup(func() error {
 		plugins := dnsserver.GetConfig(c).Handlers()
-		// Collect all plugins which implement Metadataer interface
+		// Collect all plugins which implement Provider interface
 		metadataVariables := map[string]bool{}
 		for _, p := range plugins {
-			if met, ok := p.(Metadataer); ok {
+			if met, ok := p.(Provider); ok {
 				for _, varName := range met.MetadataVarNames() {
 					if _, ok := metadataVariables[varName]; ok {
 						return fmt.Errorf("Metadata variable '%v' has duplicates", varName)
 					}
 					metadataVariables[varName] = true
 				}
-				m.Metadataers = append(m.Metadataers, met)
+				m.Providers = append(m.Providers, met)
 			}
 		}
 		return nil

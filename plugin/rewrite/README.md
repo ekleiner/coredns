@@ -208,7 +208,7 @@ rewrites the first local option with code 0xffee, setting the data to "abcd". Eq
 
 * A variable data is specified with a pair of curly brackets `{}`. Following are the supported variables by default:
   {qname}, {qtype}, {client_ip}, {client_port}, {protocol}, {server_ip}, {server_port}.
-Any plugin that can provide it's own additional variables by implementing Metadataer interface. If you are going to use metadata variables then metadata plugin must be enabled.
+Any plugin that can provide it's own additional variables by implementing metadata.Provider interface. If you are going to use metadata variables then metadata plugin must be enabled.
 
 Example:
 

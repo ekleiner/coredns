@@ -9,10 +9,10 @@ import (
 	"github.com/miekg/dns"
 )
 
-// testMetadataer implements fake Metadataers. Plugins which inmplement Metadataer interface
-type testMetadataer map[string]interface{}
+// testProvider implements fake Providers. Plugins which inmplement Provider interface
+type testProvider map[string]interface{}
 
-func (m testMetadataer) MetadataVarNames() []string {
+func (m testProvider) MetadataVarNames() []string {
 	keys := []string{}
 	for k := range m {
 		keys = append(keys, k)
@@ -20,7 +20,7 @@ func (m testMetadataer) MetadataVarNames() []string {
 	return keys
 }
 
-func (m testMetadataer) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg, key string) (val interface{}, ok bool) {
+func (m testProvider) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg, key string) (val interface{}, ok bool) {
 	value, ok := m[key]
 	return value, ok
 }
@@ -36,26 +36,26 @@ func (m *testHandler) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns
 }
 
 func TestMetadataServDns(t *testing.T) {
-	expectedMetadata := []testMetadataer{
-		testMetadataer{"testkey1": "testvalue1"},
-		testMetadataer{"testkey2": 2, "testkey3": "testvalue3"},
+	expectedMetadata := []testProvider{
+		testProvider{"testkey1": "testvalue1"},
+		testProvider{"testkey2": 2, "testkey3": "testvalue3"},
 	}
-	// Create fake Metadataers based on expectedMetadata
-	Metadataers := []Metadataer{}
+	// Create fake Providers based on expectedMetadata
+	providers := []Provider{}
 	for _, e := range expectedMetadata {
-		Metadataers = append(Metadataers, e)
+		providers = append(providers, e)
 	}
 	// Fake handler which stores the resulting context
 	next := &testHandler{}
 
 	metadata := Metadata{
-		Zones:       []string{"."},
-		Metadataers: Metadataers,
-		Next:        next,
+		Zones:     []string{"."},
+		Providers: providers,
+		Next:      next,
 	}
 	metadata.ServeDNS(context.TODO(), &test.ResponseWriter{}, new(dns.Msg))
 
-	// Verify that next plugin can find metadata in context from all Metadataers
+	// Verify that next plugin can find metadata in context from all Providers
 	for _, expected := range expectedMetadata {
 		md, ok := FromContext(next.ctx)
 		if !ok {

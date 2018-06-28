@@ -6,12 +6,12 @@ import (
 	"github.com/miekg/dns"
 )
 
-// Metadataer interface needs to be implemented by each plugin willing to provide
+// Provider interface needs to be implemented by each plugin willing to provide
 // metadata information for other plugins.
 // Note: this method should work quickly, because it is called for every request
 // from the metadata plugin.
-type Metadataer interface {
-	// List of variables which are provided by current metadataer. Must remain constant.
+type Provider interface {
+	// List of variables which are provided by current Provider. Must remain constant.
 	MetadataVarNames() []string
 	// Metadata is expected to return a value with metadata information by the key
 	// from 4th argument. Value can be later retrieved from context by any other plugin.
