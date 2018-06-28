@@ -13,13 +13,13 @@ func TestMD(t *testing.T) {
 	}{
 		{
 			// Add initial metadata key/vals
-			map[string]interface{}{"key1": "val1", "key2": 2, "key3": 3},
-			map[string]interface{}{"key1": "val1", "key2": 2, "key3": 3},
+			map[string]interface{}{"key1": "val1", "key2": 2},
+			map[string]interface{}{"key1": "val1", "key2": 2},
 		},
 		{
-			// Add additional key/vals. Duplicate keys are removed.
-			map[string]interface{}{"key2": 2, "key3": 3, "key4": 4},
-			map[string]interface{}{"key1": "val1", "key4": 4},
+			// Add additional key/vals.
+			map[string]interface{}{"key3": 3, "key4": 4.5},
+			map[string]interface{}{"key1": "val1", "key2": 2, "key3": 3, "key4": 4.5},
 		},
 	}
 

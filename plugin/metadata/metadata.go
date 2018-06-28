@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/coredns/coredns/plugin"
-	"github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/coredns/coredns/plugin/pkg/variables"
 	"github.com/coredns/coredns/request"
 
@@ -33,9 +32,7 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		for _, metadataer := range m.Metadataers {
 			for _, varName := range metadataer.MetadataVarNames() {
 				if val, ok := metadataer.Metadata(varName, ctx, w, r); ok {
-					if err := md.setValue(varName, val); err != nil {
-						log.Error(err)
-					}
+					md.setValue(varName, val)
 				}
 			}
 		}
@@ -46,13 +43,13 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	return rcode, err
 }
 
+// MetadataVarNames implements the plugin.Metadataer interface.
+func (m *Metadata) MetadataVarNames() []string { return variables.All }
+
 // Metadata implements the plugin.Metadataer interface.
-func (m *Metadata) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) map[string]interface{} {
-	result := map[string]interface{}{}
-	for _, varName := range variables.All {
-		if value, err := variables.GetValue(varName, w, r); err == nil {
-			result[varName] = value
-		}
+func (m *Metadata) Metadata(varName string, ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (interface{}, bool) {
+	if val, err := variables.GetValue(varName, w, r); err == nil {
+		return val, true
 	}
-	return result
+	return nil, false
 }

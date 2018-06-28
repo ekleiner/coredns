@@ -2,7 +2,6 @@ package metadata
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/miekg/dns"
 )
@@ -50,12 +49,6 @@ func (m MD) Value(key string) (value interface{}, ok bool) {
 
 // setValues adds metadata values.
 // If variable with a new key already attached then new is not appllied, old is removed.
-func (m MD) setValue(key string, val interface{}) error {
-	if _, ok := m[key]; !ok {
-		m[key] = val
-	} else {
-		delete(m, key)
-		return fmt.Errorf("Metadata variable '%v' has duplicates, it is not added", key)
-	}
-	return nil
+func (m MD) setValue(key string, val interface{}) {
+	m[key] = val
 }
