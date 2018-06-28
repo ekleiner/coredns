@@ -20,7 +20,7 @@ func (m testMetadataer) MetadataVarNames() []string {
 	return keys
 }
 
-func (m testMetadataer) Metadata(key string, ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (val interface{}, ok bool) {
+func (m testMetadataer) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg, key string) (val interface{}, ok bool) {
 	value, ok := m[key]
 	return value, ok
 }

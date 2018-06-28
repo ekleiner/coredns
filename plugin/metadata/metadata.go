@@ -31,7 +31,7 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		// Go through all Metadataers and collect metadata
 		for _, metadataer := range m.Metadataers {
 			for _, varName := range metadataer.MetadataVarNames() {
-				if val, ok := metadataer.Metadata(varName, ctx, w, r); ok {
+				if val, ok := metadataer.Metadata(ctx, w, r, varName); ok {
 					md.setValue(varName, val)
 				}
 			}
@@ -47,7 +47,7 @@ func (m *Metadata) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 func (m *Metadata) MetadataVarNames() []string { return variables.All }
 
 // Metadata implements the plugin.Metadataer interface.
-func (m *Metadata) Metadata(varName string, ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (interface{}, bool) {
+func (m *Metadata) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg, varName string) (interface{}, bool) {
 	if val, err := variables.GetValue(varName, w, r); err == nil {
 		return val, true
 	}

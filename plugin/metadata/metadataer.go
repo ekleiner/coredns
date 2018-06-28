@@ -14,9 +14,9 @@ type Metadataer interface {
 	// List of variables which are provided by current metadataer. Must remain constant.
 	MetadataVarNames() []string
 	// Metadata is expected to return a value with metadata information by the key
-	// from first argument. Value can be later retrieved from context by any other plugin.
+	// from 4th argument. Value can be later retrieved from context by any other plugin.
 	// If value is not available by some reason returned boolean value should be false.
-	Metadata(string, context.Context, dns.ResponseWriter, *dns.Msg) (interface{}, bool)
+	Metadata(context.Context, dns.ResponseWriter, *dns.Msg, string) (interface{}, bool)
 }
 
 // MD is metadata information storage
