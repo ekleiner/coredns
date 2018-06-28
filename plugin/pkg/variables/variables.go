@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/coredns/coredns/request"
+
 	"github.com/miekg/dns"
 )
 
@@ -20,12 +21,12 @@ const (
 	serverPort = "server_port"
 )
 
-// AllProvidedVars is a list of available variables provided by GetMetadataValue
-var AllProvidedVars = []string{queryName, queryType, clientIP, clientPort, protocol, serverIP, serverPort}
+// All is a list of available variables provided by GetMetadataValue
+var All = []string{queryName, queryType, clientIP, clientPort, protocol, serverIP, serverPort}
 
-// GetMetadataValue calculates and returns the data specified by the variable name.
+// GetValue calculates and returns the data specified by the variable name.
 // Supported varNames are listed in allProvidedVars.
-func GetMetadataValue(varName string, w dns.ResponseWriter, r *dns.Msg) ([]byte, error) {
+func GetValue(varName string, w dns.ResponseWriter, r *dns.Msg) ([]byte, error) {
 	req := request.Request{W: w, Req: r}
 	switch varName {
 	case queryName:

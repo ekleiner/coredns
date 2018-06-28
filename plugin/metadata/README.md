@@ -18,12 +18,15 @@ metadata [ZONES... ]
 
 ## Plugins
 
-Any plugin that implements the Metadataer interface will be called to get metadata information.
-If **ZONES** is specified then metadata add is limited by zones. Metadata is added to all context going through Metadataer if **ZONES** are not specified.
+Metadataer interface needs to be implemented by each plugin willing to provide metadata information for other plugins. It will be called by metadata and gather the information from all plugins in context.
+Note: this method should work quickly, because it is called for every request
+from the metadata plugin.
+If **ZONES** is specified then metadata add is limited by zones. Metadata is added to every context going through Metadataer if **ZONES** are not specified.
+
 
 ## Examples
 
-Enable metadata for all requests. Rewrite uses one of provided by default metadata variables.
+Enable metadata for all requests. Rewrite uses one of the provided by default metadata variables.
 
 ~~~ corefile
 . {

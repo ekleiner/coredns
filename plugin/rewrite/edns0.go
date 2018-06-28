@@ -202,7 +202,7 @@ func (rule *edns0VariableRule) ruleData(ctx context.Context, w dns.ResponseWrite
 			}
 		}
 	} else { // No metadata available means metadata plugin is disabled. Try to get the value directly.
-		return variables.GetMetadataValue(rule.variable, w, r)
+		return variables.GetValue(rule.variable, w, r)
 	}
 	return nil, fmt.Errorf("unable to extract data for variable %s", rule.variable)
 }

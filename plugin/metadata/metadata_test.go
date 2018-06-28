@@ -5,17 +5,24 @@ import (
 	"testing"
 
 	"github.com/coredns/coredns/plugin/test"
+
 	"github.com/miekg/dns"
 )
 
 // testMetadataer implements fake Metadataers. Plugins which inmplement Metadataer interface
-type testMetadataer struct {
-	key   string
-	value interface{}
+type testMetadataer map[string]interface{}
+
+func (m testMetadataer) MetadataVarNames() []string {
+	keys := []string{}
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
-func (m testMetadataer) Metadata(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) map[string]interface{} {
-	return map[string]interface{}{m.key: m.value}
+func (m testMetadataer) Metadata(key string, ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (val interface{}, ok bool) {
+	value, ok := m[key]
+	return value, ok
 }
 
 // testHandler implements plugin.Handler
@@ -30,8 +37,8 @@ func (m *testHandler) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns
 
 func TestMetadataServDns(t *testing.T) {
 	expectedMetadata := []testMetadataer{
-		{"testkey1", "testvalue"},
-		{"testkey2", 795},
+		testMetadataer{"testkey1": "testvalue1"},
+		testMetadataer{"testkey2": 2, "testkey3": "testvalue3"},
 	}
 	// Create fake Metadataers based on expectedMetadata
 	Metadataers := []Metadataer{}
@@ -54,15 +61,17 @@ func TestMetadataServDns(t *testing.T) {
 		if !ok {
 			t.Fatalf("Metadata is expected but not present inside the context")
 		}
-		metadataVal, ok := md.Value(expected.key)
-		if !ok {
-			t.Fatalf("Value by key %v can't be retrieved", expected.key)
-		}
-		if metadataVal != expected.value {
-			t.Errorf("Expected value %v, but got %v", expected.value, metadataVal)
+		for expKey, expVal := range expected {
+			metadataVal, valOk := md.Value(expKey)
+			if !valOk {
+				t.Fatalf("Value by key %v can't be retrieved", expKey)
+			}
+			if metadataVal != expVal {
+				t.Errorf("Expected value %v, but got %v", expVal, metadataVal)
+			}
 		}
 		wrongKey := "wrong_key"
-		metadataVal, ok = md.Value(wrongKey)
+		metadataVal, ok := md.Value(wrongKey)
 		if ok {
 			t.Fatalf("Value by key %v is not expected to be recieved, but got: %v", wrongKey, metadataVal)
 		}

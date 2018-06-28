@@ -8,7 +8,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-func TestGetMetadataValue(t *testing.T) {
+func TestGetValue(t *testing.T) {
 	// test.ResponseWriter has the following values:
 	// 		The remote will always be 10.240.0.1 and port 40212.
 	// 		The local address is always 127.0.0.1 and port 53.
@@ -64,7 +64,7 @@ func TestGetMetadataValue(t *testing.T) {
 		m.SetQuestion("example.com.", dns.TypeA)
 		m.Question[0].Qclass = dns.ClassINET
 
-		value, err := GetMetadataValue(tc.varName, &test.ResponseWriter{}, m)
+		value, err := GetValue(tc.varName, &test.ResponseWriter{}, m)
 
 		if tc.shouldErr && err == nil {
 			t.Errorf("Test %d: Expected error, but didn't recieve", i)
