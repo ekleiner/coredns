@@ -47,8 +47,7 @@ func (m MD) Value(key string) (value interface{}, ok bool) {
 	return value, ok
 }
 
-// setValues adds metadata values.
-// If variable with a new key already attached then new is not appllied, old is removed.
+// setValue adds metadata value.
 func (m MD) setValue(key string, val interface{}) {
 	m[key] = val
 }
